@@ -7,4 +7,3 @@
 /PPO_Atari/data*
 /.vs
 /PPO_Atari/*.h5f
-/PPO_Atari/*.pyproj
