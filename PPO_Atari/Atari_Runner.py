@@ -130,7 +130,7 @@ class Atari_Runner:
 
     def test(self, nb_try=1):
         # 環境宣言 動画保存
-        self.env = wrappers.Monitor(self.env, Save_file_util.get_file_name('./movie_folder'), video_callable=(lambda ep: True), force=True)
+        self.env = wrappers.Monitor(self.env, Save_file_util.get_file_name('./movie_folder'), video_callable=(lambda ep: True), force=True, resume=True)
 
         # mode指定
         self.mode = 'test'
