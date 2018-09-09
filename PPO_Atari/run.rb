@@ -9,7 +9,7 @@ File.open("run.bat","w") do |f|
 			for t in timesteps do
 				for b in batchsize do
 					if b <= t 
-						str = "python  PPO_Atari.py --epoch %d -b %d -t %d  -lr %s" % [e , b,  t , l]
+						str = "python  PPO_Atari.py --epoch %d -b %d -t %d  -lr %s -n %d" % [e , b,  t , l, 5]
 						f.puts str
 					end
 				end
