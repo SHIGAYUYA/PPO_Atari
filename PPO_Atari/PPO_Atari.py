@@ -102,6 +102,8 @@ if __name__ == "__main__":
     NB_STAPS = args.steps
     NB_TRY = args.tryn
 
+    Save_file_util.push(ENV_NAME)
+
     Save_file_util.push(EPOCHS)
     Save_file_util.push(BATCHSIZE)
     Save_file_util.push(TIMESTEPS)

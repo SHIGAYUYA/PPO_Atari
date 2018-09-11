@@ -60,7 +60,7 @@ class Agent:
     def get_learn_interval(self):
         return self.brain.get_learn_interval()
 
-    def save_brain(self, target, path=None):
+    def save_brain(self, path=None):
         """Brainの保存"""
-        self.brain.save_model(target, path)
+        self.brain.save_model(path)
 

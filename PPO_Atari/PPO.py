@@ -16,7 +16,7 @@ from sklearn.utils import shuffle
 from Save_util import Save_file_util
 
 class PPO:
-    def __init__(self, sess, nb_action, input_shape, epochs, batchsize, timesteps, clip_param, entcoeff, gamma, lam, learning_rate):
+    def __init__(self, sess, nb_action, input_shape, epochs, batchsize, timesteps, clip_param, entcoeff, gamma, lam, learning_rate, test=false):
         self.sess = sess
 
         # 学習の定数
@@ -29,38 +29,31 @@ class PPO:
         self.lam = lam
 
         K.set_session(sess)
+
+        if test:
+            self.model = load_model(Save_file_util.get_file_name("ppo_weight_"+ target, '.h5f'))
+        else:
+            with tf.name_scope("BrainOld"):
+                self.model_old = self._build_model(input_shape, nb_action)
+
+            with tf.name_scope("brain"):
+                # ニューラルネットワークの形を決定
+                self.model = self._build_model(input_shape, nb_action)  
+
+                # loss関数を最小化していくoptimizerの定義
+                self.opt = tf.train.AdamOptimizer(learning_rate=learning_rate)  
+
+                # ネットワークの学習やメソッドを定義
+                self.graph = self.build_graph(input_shape, nb_action)  
         
-        with tf.name_scope("BrainOld"):
-            self.model_old = self._build_model(input_shape, nb_action)
+            # 重みのコピー
+            self.model_old.set_weights([w for w in self.model.get_weights()])
 
-        with tf.name_scope("brain"):
-            # ニューラルネットワークの形を決定
-            self.model = self._build_model(input_shape, nb_action)  
+            # モデルの可視化
+            plot_model(self.model, to_file='PPO.png', show_shapes=True)
 
-            # loss関数を最小化していくoptimizerの定義
-            self.opt = tf.train.AdamOptimizer(learning_rate=learning_rate)  
-
-            # ネットワークの学習やメソッドを定義
-            self.graph = self.build_graph(input_shape, nb_action)  
-        
-        # 重みのコピー
-        self.model_old.set_weights([w for w in self.model.get_weights()])
-
-        # モデルの可視化
-        plot_model(self.model, to_file='PPO.png', show_shapes=True)
-
-        # キューの初期化
-        self.train_queue = {"ob" : [], "rew" : [], "vpred" : [], "nonterminal" : [],"ac" : []}
-
-        # filename用
-        self.parms = []
-        self.parms.append(self.epochs)
-        self.parms.append(self.batchsize)
-        self.parms.append(self.timestaps)
-        self.parms.append(self.clip_param)
-        self.parms.append(self.entcoeff)
-        self.parms.append(self.gamma)
-        self.parms.append(self.lam)
+            # キューの初期化
+            self.train_queue = {"ob" : [], "rew" : [], "vpred" : [], "nonterminal" : [],"ac" : []}
 
 
     def _build_model(self, input_shape, nb_action):     # Kerasでネットワークの形を定義
@@ -125,7 +118,7 @@ class PPO:
             logits=logits,
             labels=a)
 
-        ratio = tf.exp(logp(self.a_t, p) - logp(self.a_t, p_old)) # pnew / pold
+        ratio = tf.exp(logp(self.a_t, p) - logp(self.a_t, tf.stop_gradient(p_old))) # pnew / pold
         surr1 = ratio * self.atarg # surrogate from conservative policy iteration
         surr2 = tf.clip_by_value(ratio, 1.0 - self.clip_param, 1.0 + self.clip_param) * self.atarg #
         pol_surr = - tf.reduce_mean(tf.minimum(surr1, surr2)) # PPO's pessimistic surrogate (L^CLIP)
@@ -206,12 +199,12 @@ class PPO:
 
         return np.array(self.train_queue["ob"]), np.array(self.train_queue["ac"]), atarg, vtarg
 
-    def save_model(self, target, path=None):
+    def save_model(self, path=None):
         """モデルの重み保存"""
         if path is None:
-            p = Save_file_util.get_file_name("ppo_weight_"+ target, '.h5f')
+            p = Save_file_util.get_file_name("ppo_weight", '.h5f')
         else:
-            p = path + "_" + target
+            p = path
         #print(p)
         self.model.save(p)
 
