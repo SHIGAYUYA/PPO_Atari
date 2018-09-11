@@ -16,7 +16,7 @@ from sklearn.utils import shuffle
 from Save_util import Save_file_util
 
 class PPO:
-    def __init__(self, sess, nb_action, input_shape, epochs, batchsize, timesteps, clip_param, entcoeff, gamma, lam, learning_rate, test=false):
+    def __init__(self, sess, nb_action, input_shape, epochs, batchsize, timesteps, clip_param, entcoeff, gamma, lam, learning_rate, test=False):
         self.sess = sess
 
         # 学習の定数
